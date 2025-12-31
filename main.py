@@ -38,6 +38,7 @@ try:
     from backtest.report import summarize
     from data.fundamentals import fetch_fundamentals
     from engine.ai_summary import summarize_analysis
+    from data.fetchers.yahoo_fundamentals import fetch_fundamentals_yahoo, auto_fetch_and_cache_portfolio
     print("✅ All imports successful from relative paths")
 except ImportError as e:
     print(f"❌ Import error: {e}")
@@ -99,6 +100,11 @@ class AnalysisResponse(BaseModel):
     technical: Optional[dict]
     fundamental: Optional[dict]
     summary: Optional[dict]
+
+
+class FundamentalRefreshRequest(BaseModel):
+    """Request to refresh fundamental data"""
+    symbols: List[str]
 
 
 class BacktestResponse(BaseModel):
@@ -370,6 +376,73 @@ def get_config():
         "SELL_THRESHOLD": SIGNAL_CONFIG["SELL_THRESHOLD"],
         "BACKTEST_THRESHOLDS": BACKTEST_THRESHOLDS
     }
+
+
+@app.get("/fundamental/refresh")
+def refresh_fundamental(symbol: str):
+    """
+    Manually fetch and cache latest fundamental data from Yahoo Finance.
+    
+    Args:
+        symbol: Stock symbol (e.g., "BBCA")
+    
+    Returns:
+        Fresh fundamental data or error
+    
+    Example:
+        GET /fundamental/refresh?symbol=BBCA
+    """
+    try:
+        result = fetch_fundamentals_yahoo(symbol, use_cache=False)  # Force refresh
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+        return {
+            "ok": True,
+            "symbol": symbol,
+            "fundamentals": result.get("fundamentals", []),
+            "source": result.get("source", "unknown"),
+            "updated_at": result.get("last_updated")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/fundamental/refresh-portfolio")
+def refresh_portfolio(request: FundamentalRefreshRequest):
+    """
+    Batch fetch fundamentals for multiple symbols.
+    
+    Args:
+        symbols: List of symbols
+    
+    Returns:
+        Dict of symbol -> fundamental data
+    
+    Example:
+        POST /fundamental/refresh-portfolio
+        {"symbols": ["BBCA", "BBRI", "BMRI"]}
+    """
+    try:
+        symbols = request.symbols
+        if not symbols:
+            raise HTTPException(status_code=400, detail="No symbols provided")
+        
+        results = auto_fetch_and_cache_portfolio(symbols)
+        return {
+            "ok": True,
+            "count": len(results),
+            "results": {
+                sym: {
+                    "fundamentals": data.get("fundamentals", [])[:1],  # Latest only
+                    "source": data.get("source", "unknown")
+                } if "error" not in data else {"error": data["error"]}
+                for sym, data in results.items()
+            },
+            "updated_at": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ===== HEALTH CHECK =====
