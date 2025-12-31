@@ -39,6 +39,7 @@ try:
     from data.fundamentals import fetch_fundamentals
     from engine.ai_summary import summarize_analysis
     from data.fetchers.yahoo_fundamentals import fetch_fundamentals_yahoo, auto_fetch_and_cache_portfolio
+    from engine.ai_agent import generate_layout, synthesize_recommendation
     print("✅ All imports successful from relative paths")
 except ImportError as e:
     print(f"❌ Import error: {e}")
@@ -92,6 +93,14 @@ class BacktestRequest(BaseModel):
 class AnalysisRequest(BaseModel):
     symbols: List[str]
     mode: Optional[str] = "both"  # technical, fundamental, or both
+    save: Optional[bool] = False
+
+
+class AgentAnalysisRequest(BaseModel):
+    symbols: List[str]
+    trading_style: Optional[str] = "swing"  # scalper, swing, investor, value
+    risk_level: Optional[str] = "moderate"  # conservative, moderate, aggressive
+    mode: Optional[str] = "both"
     save: Optional[bool] = False
 
 
@@ -443,6 +452,70 @@ def refresh_portfolio(request: FundamentalRefreshRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/agent/analyze")
+def agent_analyze(request: AgentAnalysisRequest):
+    """
+    Analyze symbols with a trading-style AI agent and return customized layouts.
+
+    Request JSON example:
+    {
+      "symbols": ["BBCA", "BBRI"],
+      "trading_style": "swing",
+      "risk_level": "moderate",
+      "mode": "both",
+      "save": false
+    }
+    """
+    results = []
+    for symbol in request.symbols:
+        try:
+            # Fetch technical (1y) and 5y for patterns
+            df = fetch_eod(symbol)
+            tech = None
+            tech_data_5y = None
+            if df is not None and not df.empty:
+                df = add_indicators(df)
+                tech = decision_engine(df)
+
+            try:
+                df5 = fetch_eod(symbol, use_5y=True)
+                if df5 is not None and not df5.empty:
+                    tech_data_5y = add_indicators(df5)
+            except:
+                tech_data_5y = None
+
+            # Fundamentals (prefer cached recent or local file)
+            fund = fetch_fundamentals(symbol)
+
+            # Generate layout and recommendation
+            layout = generate_layout(request.trading_style or "swing", request.risk_level or "moderate", symbol)
+            summary = summarize_analysis(tech, fund, mode=request.mode or "both", tech_data=tech_data_5y)
+            recommendation_text = synthesize_recommendation(summary.get("technical_score", 0), summary.get("fundamental_score", 0), layout, symbol)
+
+            # Optional save
+            saved = {}
+            if getattr(request, 'save', False):
+                ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+                try:
+                    saved['layout'] = _save_json(layout, f"agent_layout_{symbol}_{ts}.json")
+                except Exception:
+                    pass
+
+            results.append({
+                "symbol": symbol,
+                "layout": jsonable_encoder(layout),
+                "summary": jsonable_encoder(summary),
+                "recommendation": recommendation_text,
+                "saved": saved
+            })
+        except Exception as e:
+            import logging
+            logging.exception(f"Agent analyze error for {symbol}")
+            results.append({"symbol": symbol, "error": str(e)})
+
+    return {"ok": True, "results": results, "timestamp": datetime.now().isoformat()}
 
 
 # ===== HEALTH CHECK =====
