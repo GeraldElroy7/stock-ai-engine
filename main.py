@@ -301,22 +301,34 @@ def get_portfolio_signals(symbols: str) -> dict:
 
 @app.post("/analysis")
 def run_analysis(request: AnalysisRequest):
-    """Run combined analysis (technical + fundamental) and return AI-style summary."""
+    """Run combined analysis (technical + fundamental) with 5-year patterns and AI insights."""
     results = []
     for symbol in request.symbols:
         tech = None
         fund = None
+        tech_data_5y = None
         try:
-            # technical
+            # Technical analysis (1-year by default)
             df = fetch_eod(symbol)
             if df is not None and not df.empty and request.mode in ("technical", "both"):
                 df = add_indicators(df)
                 tech = decision_engine(df)
-            # fundamentals
+            
+            # 5-year technical data for pattern recognition
+            if request.mode in ("technical", "both"):
+                try:
+                    df_5y = fetch_eod(symbol, use_5y=True)
+                    if df_5y is not None and not df_5y.empty:
+                        tech_data_5y = add_indicators(df_5y)
+                except:
+                    pass  # Fallback to 1-year if 5-year fails
+            
+            # Fundamentals
             if request.mode in ("fundamental", "both"):
                 fund = fetch_fundamentals(symbol)
 
-            summary = summarize_analysis(tech, fund, mode=request.mode or "both")
+            # AI summary with 5-year pattern analysis
+            summary = summarize_analysis(tech, fund, mode=request.mode or "both", tech_data=tech_data_5y)
 
             # Save analysis if requested
             saved_paths = {}
@@ -338,6 +350,7 @@ def run_analysis(request: AnalysisRequest):
                 "technical": jsonable_encoder(tech),
                 "fundamental": jsonable_encoder(fund),
                 "summary": jsonable_encoder(summary),
+                "pattern_analysis": jsonable_encoder(summary.get("pattern_analysis", {})),
                 "saved": saved_paths
             })
 
