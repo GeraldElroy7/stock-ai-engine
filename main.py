@@ -33,7 +33,7 @@ try:
     from data.fetcher import fetch_eod
     from indicators.technical import add_indicators
     from engine.decision import decision_engine
-    from config import SIGNAL_CONFIG, BACKTEST_THRESHOLDS
+    from config import SIGNAL_CONFIG, BACKTEST_THRESHOLDS, SUPPORTED_STOCKS
     from backtest.simple_backtest import backtest
     from backtest.report import summarize
     from data.fundamentals import fetch_fundamentals
@@ -491,16 +491,46 @@ def agent_analyze(request: AgentAnalysisRequest):
     results = []
     for symbol in request.symbols:
         try:
-            # Auto-detect US vs IDX stocks
-            is_us = symbol.isupper() and len(symbol) <= 4 and symbol not in ["BBCA", "BBRI", "BMRI", "ASII", "UNTR"]
+            # Check if symbol is supported
+            if symbol not in SUPPORTED_STOCKS:
+                results.append({
+                    "symbol": symbol,
+                    "error": f"Symbol not in supported list. Use /stocks endpoint to see available symbols.",
+                    "status": "skipped"
+                })
+                continue
+            
+            # Auto-detect US vs IDX stocks from config
+            stock_info = SUPPORTED_STOCKS[symbol]
+            is_us = stock_info.get("is_us", False)
             
             # Fetch technical (1y) and 5y for patterns
             df = fetch_eod(symbol, is_us=is_us)
+            
+            # Handle missing data gracefully
+            if df is None or df.empty:
+                results.append({
+                    "symbol": symbol,
+                    "error": f"No price data available for {symbol}. May be delisted or halted.",
+                    "status": "no_data",
+                    "company": stock_info.get("name"),
+                    "sector": stock_info.get("sector")
+                })
+                continue
+            
             tech = None
             tech_data_5y = None
-            if df is not None and not df.empty:
+            try:
                 df = add_indicators(df)
                 tech = decision_engine(df)
+            except Exception as e:
+                results.append({
+                    "symbol": symbol,
+                    "error": f"Technical analysis failed: {str(e)[:100]}",
+                    "status": "analysis_error",
+                    "company": stock_info.get("name")
+                })
+                continue
 
             try:
                 df5 = fetch_eod(symbol, use_5y=True, is_us=is_us)
@@ -551,6 +581,41 @@ def agent_analyze(request: AgentAnalysisRequest):
 def health_check():
     """Kubernetes-style health check"""
     return {"status": "healthy"}
+
+
+@app.get("/stocks")
+def list_stocks():
+    """
+    List all supported stocks with details.
+    
+    Returns:
+        - IHSG stocks (is_us=false)
+        - US stocks (is_us=true)
+        - By sector
+        - Total count
+    
+    Extensibility: To add more stocks, edit config.py SUPPORTED_STOCKS dict
+    """
+    ihsg_stocks = {sym: data for sym, data in SUPPORTED_STOCKS.items() if not data.get("is_us", False)}
+    us_stocks = {sym: data for sym, data in SUPPORTED_STOCKS.items() if data.get("is_us", False)}
+    
+    # Group by sector
+    sectors = {}
+    for symbol, info in SUPPORTED_STOCKS.items():
+        sector = info.get("sector", "Other")
+        if sector not in sectors:
+            sectors[sector] = []
+        sectors[sector].append({"symbol": symbol, "name": info.get("name")})
+    
+    return {
+        "total_stocks": len(SUPPORTED_STOCKS),
+        "ihsg_count": len(ihsg_stocks),
+        "us_count": len(us_stocks),
+        "ihsg_stocks": ihsg_stocks,
+        "us_stocks": us_stocks,
+        "by_sector": sectors,
+        "note": "To add stocks: Edit config.py SUPPORTED_STOCKS dict and restart server"
+    }
 
 
 # ===== ERROR HANDLERS =====

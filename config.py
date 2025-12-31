@@ -48,6 +48,80 @@ DATA_CONFIG = {
     "PRIMARY_SOURCE": "yfinance",
     "FALLBACK_SOURCE": "None",  # Add fallback if needed
     "LOOKBACK_PERIOD": "1y",    # Historical data window (upgraded from 6mo for better accuracy)
+}
+
+# ===== SUPPORTED STOCKS =====
+# IHSG Stocks - Easily extensible to 100+ stocks
+# Format: "SYMBOL": {"is_us": False, "name": "Company Name", "sector": "Sector"}
+SUPPORTED_STOCKS = {
+    # === BLUE CHIPS (Top 10) ===
+    "BBCA": {"is_us": False, "name": "Bank Central Asia", "sector": "Banking"},
+    "BBRI": {"is_us": False, "name": "Bank Rakyat Indonesia", "sector": "Banking"},
+    "BMRI": {"is_us": False, "name": "Bank Mandiri", "sector": "Banking"},
+    "ASII": {"is_us": False, "name": "Astra International", "sector": "Automotive"},
+    "UNVR": {"is_us": False, "name": "Unilever Indonesia", "sector": "Consumer Goods"},
+    "INCO": {"is_us": False, "name": "Vale Indonesia", "sector": "Mining"},
+    "ANTM": {"is_us": False, "name": "Antam", "sector": "Mining"},
+    "ITMG": {"is_us": False, "name": "Indo Tambangraya Megah", "sector": "Mining"},
+    "TINS": {"is_us": False, "name": "Timah", "sector": "Mining"},
+    "NICL": {"is_us": False, "name": "Nickel Indonesia", "sector": "Mining"},
+    
+    # === FINANCE & BANKING ===
+    "MEDC": {"is_us": False, "name": "Medco Energi", "sector": "Finance"},
+    "MDKA": {"is_us": False, "name": "Merdeka Copper Gold", "sector": "Mining"},
+    "ASSO": {"is_us": False, "name": "Asosiasi Asuransi Indonesia", "sector": "Insurance"},
+    "AKRA": {"is_us": False, "name": "AKR Corporindo", "sector": "Trading"},
+    
+    # === AGRICULTURE & CONSUMER ===
+    "AGRO": {"is_us": False, "name": "Bank Pertanian", "sector": "Banking"},
+    "INDF": {"is_us": False, "name": "Indofood", "sector": "Consumer Goods"},
+    
+    # === UTILITIES & ENERGY ===
+    "PGAS": {"is_us": False, "name": "Perusahaan Gas Negara", "sector": "Utilities"},
+    "ADRO": {"is_us": False, "name": "Adaro Energy", "sector": "Energy"},
+    
+    # === PROPERTY & CONSTRUCTION ===
+    "CTRA": {"is_us": False, "name": "Citraland", "sector": "Property"},
+    "MNCN": {"is_us": False, "name": "MNC Investama", "sector": "Media"},
+    "PTPP": {"is_us": False, "name": "Pembangunan Perumahan", "sector": "Construction"},
+    "WIKA": {"is_us": False, "name": "Wijaya Karya", "sector": "Construction"},
+    
+    # === TECH & DIGITAL ===
+    "GOTO": {"is_us": False, "name": "GoTo Gojek Tokopedia", "sector": "Technology"},
+    "ASRI": {"is_us": False, "name": "Astra Sedaya Finance", "sector": "Finance"},
+    
+    # === TELECOMMUNICATIONS ===
+    "TLKM": {"is_us": False, "name": "Telkom", "sector": "Telecom"},
+    
+    # === TRANSPORTATION & LOGISTICS ===
+    "BRPT": {"is_us": False, "name": "Bhakti Pertiwi", "sector": "Transportation"},
+    
+    # === HEALTHCARE ===
+    "ARNA": {"is_us": False, "name": "Arwana Citramulia", "sector": "Healthcare"},
+    
+    # === SUPPORTING TIER (Add more as needed) ===
+    "JPRS": {"is_us": False, "name": "Jasa Marga", "sector": "Transportation"},
+    
+    # === US STOCKS ===
+    "COIN": {"is_us": True, "name": "Coinbase Global", "sector": "Crypto"},
+    "TSLA": {"is_us": True, "name": "Tesla", "sector": "Automotive"},
+    "AAPL": {"is_us": True, "name": "Apple", "sector": "Technology"},
+    "MSFT": {"is_us": True, "name": "Microsoft", "sector": "Technology"},
+    "GOOGL": {"is_us": True, "name": "Alphabet (Google)", "sector": "Technology"},
+    "AMZN": {"is_us": True, "name": "Amazon", "sector": "E-Commerce"},
+}
+
+# ===== EASY EXTEND GUIDE =====
+"""
+To add more IHSG stocks, just add to SUPPORTED_STOCKS dict:
+
+SUPPORTED_STOCKS.update({
+    "SYMBOL": {"is_us": False, "name": "Full Company Name", "sector": "Sector"},
+    ...
+})
+
+Atau gunakan endpoint POST /admin/add-stock untuk menambah di runtime
+"""
     "TIMEZONE": "Asia/Jakarta",
     "MARKET": "Indonesia (IDX)",
     "DATA_POINTS_TARGET": 250,   # Approximately 250 trading days per year
