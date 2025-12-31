@@ -199,6 +199,36 @@ The system calculates:
 
 ## 📞 Support
 
+## 🔎 Fundamentals Data & `results/` folder
+- Fundamental data is loaded from JSON files placed under `data/fund_data/{SYMBOL}.json` (you will provide these). If a file is missing, the system returns a small mocked record so flows can run.
+- Example fundamentals file (`data/fund_data/BBCA.json`):
+```json
+{
+  "symbol": "BBCA",
+  "pe_ratio": 7.2,
+  "pb_ratio": 1.3,
+  "roe_pct": 15.2,
+  "revenue_growth_pct": 8.4,
+  "market_cap_usd": 12000000000
+}
+```
+
+`/backtest` and `/analysis` support an optional `save` boolean in the request body. When `save=true` the engine will persist:
+- trades CSV: `results/trades_{SYMBOL}_{TIMESTAMP}.csv`
+- report JSON: `results/report_{SYMBOL}_{TIMESTAMP}.json`
+- analysis summary JSON: `results/analysis_summary_{SYMBOL}_{TIMESTAMP}.json`
+
+Use examples:
+```bash
+# Backtest with save
+curl -X POST http://127.0.0.1:8000/backtest -H "Content-Type: application/json" -d '{"symbols":["BBCA"],"save":true}'
+
+# Analysis with save
+curl -X POST http://127.0.0.1:8000/analysis -H "Content-Type: application/json" -d '{"symbols":["BBCA"],"mode":"both","save":true}'
+```
+
+#
+
 - **Questions?** Check `docs/START_HERE.md`
 - **Integration?** See `docs/MAIN_APP_INTEGRATION_STEPS.md`
 - **Testing?** See `docs/INTEGRATION_TESTING_GUIDE.md`
