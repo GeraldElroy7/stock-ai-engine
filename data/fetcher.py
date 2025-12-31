@@ -15,22 +15,27 @@ except (ImportError, ModuleNotFoundError):
     except (ImportError, ModuleNotFoundError):
         DATA_CONFIG = {"LOOKBACK_PERIOD": "1y"}
 
-def fetch_eod(ticker, use_5y=False):
+def fetch_eod(ticker, use_5y=False, is_us=False):
     """
     Fetch end-of-day data for a ticker with error handling and timeout.
     
     Args:
-        ticker: Stock symbol (without .JK suffix)
+        ticker: Stock symbol (e.g., "BBCA" for IDX, "COIN" for US)
         use_5y: If True, fetch 5 years for pattern recognition; else use config LOOKBACK_PERIOD
+        is_us: If True, fetch as US stock (no .JK suffix); else assume IDX stock
     
     Returns:
         DataFrame with OHLCV data or None if failed
     """
     try:
         lookback = "5y" if use_5y else DATA_CONFIG.get("LOOKBACK_PERIOD", "1y")
+        
+        # Auto-detect: if US stock, don't add .JK; if IDX, add .JK
+        symbol = ticker if is_us else f"{ticker}.JK"
+        
         print(f"  Fetching data for {ticker} ({lookback})...", end=" ", flush=True)
         df = yf.download(
-            f"{ticker}.JK",
+            symbol,
             period=lookback,
             interval="1d",
             auto_adjust=True,

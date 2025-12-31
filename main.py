@@ -70,6 +70,26 @@ def _save_trades_csv(trades, filename: str):
         _save_json(trades, filename + ".json")
         return str(path) + ".json"
 
+
+def _convert_numpy_types(obj):
+    """Recursively convert numpy types to native Python types for JSON serialization."""
+    import numpy as np
+    
+    if isinstance(obj, dict):
+        return {k: _convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.int32, np.int64)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float32, np.float64)):
+        return float(obj)
+    elif isinstance(obj, np.bool_):
+        return bool(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
+
 # ===== API MODELS =====
 
 class SignalResponse(BaseModel):
@@ -471,8 +491,11 @@ def agent_analyze(request: AgentAnalysisRequest):
     results = []
     for symbol in request.symbols:
         try:
+            # Auto-detect US vs IDX stocks
+            is_us = symbol.isupper() and len(symbol) <= 4 and symbol not in ["BBCA", "BBRI", "BMRI", "ASII", "UNTR"]
+            
             # Fetch technical (1y) and 5y for patterns
-            df = fetch_eod(symbol)
+            df = fetch_eod(symbol, is_us=is_us)
             tech = None
             tech_data_5y = None
             if df is not None and not df.empty:
@@ -480,7 +503,7 @@ def agent_analyze(request: AgentAnalysisRequest):
                 tech = decision_engine(df)
 
             try:
-                df5 = fetch_eod(symbol, use_5y=True)
+                df5 = fetch_eod(symbol, use_5y=True, is_us=is_us)
                 if df5 is not None and not df5.empty:
                     tech_data_5y = add_indicators(df5)
             except:
@@ -494,19 +517,23 @@ def agent_analyze(request: AgentAnalysisRequest):
             summary = summarize_analysis(tech, fund, mode=request.mode or "both", tech_data=tech_data_5y)
             recommendation_text = synthesize_recommendation(summary.get("technical_score", 0), summary.get("fundamental_score", 0), layout, symbol)
 
+            # Convert numpy types in layout and summary
+            layout_clean = _convert_numpy_types(layout)
+            summary_clean = _convert_numpy_types(summary)
+
             # Optional save
             saved = {}
             if getattr(request, 'save', False):
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
                 try:
-                    saved['layout'] = _save_json(layout, f"agent_layout_{symbol}_{ts}.json")
+                    saved['layout'] = _save_json(layout_clean, f"agent_layout_{symbol}_{ts}.json")
                 except Exception:
                     pass
 
             results.append({
                 "symbol": symbol,
-                "layout": jsonable_encoder(layout),
-                "summary": jsonable_encoder(summary),
+                "layout": jsonable_encoder(layout_clean),
+                "summary": jsonable_encoder(summary_clean),
                 "recommendation": recommendation_text,
                 "saved": saved
             })
