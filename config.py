@@ -112,16 +112,17 @@ SUPPORTED_STOCKS = {
 }
 
 # ===== EASY EXTEND GUIDE =====
-"""
+EXTEND_GUIDE = """
 To add more IHSG stocks, just add to SUPPORTED_STOCKS dict:
 
 SUPPORTED_STOCKS.update({
     "SYMBOL": {"is_us": False, "name": "Full Company Name", "sector": "Sector"},
     ...
 })
-
-Atau gunakan endpoint POST /admin/add-stock untuk menambah di runtime
 """
+
+# ===== DATA CONFIGURATION =====
+DATA_CONFIG = {
     "TIMEZONE": "Asia/Jakarta",
     "MARKET": "Indonesia (IDX)",
     "DATA_POINTS_TARGET": 250,   # Approximately 250 trading days per year
