@@ -2,24 +2,21 @@
 
 **Terakhir Update:** 1 Januari 2026  
 **Versi:** 2.0.0  
-**Status:** Production-Ready B2C Platform ✅
+**Status:** Production Ready ✅
 
 ---
 
 ## 🎯 Ringkasan Eksekutif
 
-Stock AI Engine adalah platform analisis saham B2C lengkap dengan AI-powered insights untuk retail investors. Proyek ini sudah **production-ready** dengan authentication system, enhanced fundamentals, dan personalized recommendations.
+Stock AI Engine adalah sistem analisis saham otomatis yang menggunakan indikator teknikal dan AI untuk menghasilkan sinyal trading. Proyek ini sudah **production-ready** dengan API REST yang berfungsi penuh, mendukung **120+ saham Indonesia** dengan data historis **10 tahun**.
 
-### Pencapaian Utama (Updated!)
-- ✅ **120+ Saham IDX**: IDX-30, LQ45, dan semua sektor utama
-- ✅ **Data 10 Tahun**: 2,520 trading days untuk analisis mendalam
-- ✅ **JWT Authentication**: Register, login, secure token management
-- ✅ **Enhanced Fundamentals**: 40+ metrics dengan scoring system
-- ✅ **AI Recommendations**: Personalized insights dan action items
-- ✅ **User Personalization**: 20+ parameters (trading style, risk level, capital, dll)
-- ✅ **Comprehensive API**: Technical + Fundamental + AI dalam satu endpoint
-- ✅ **Webhook System**: Ready untuk real-time alerts
-- ✅ **Swagger UI**: Complete API documentation
+### Pencapaian Utama
+- ✅ **120+ Saham IDX**: Mencakup IDX-30, LQ45, dan semua sektor utama (perbankan, tambang, konsumen, teknologi, properti, retail, transportasi, media)
+- ✅ **Data 10 Tahun**: Analisis mendalam dengan 2,520 hari trading data
+- ✅ **4 Jenis Sinyal**: BUY, HOLD, SELL, SHORT dengan confidence score 0-100%
+- ✅ **REST API**: FastAPI dengan dokumentasi Swagger otomatis
+- ✅ **Backtesting**: Validasi strategi dengan data historis
+- ✅ **20 Parameter User**: Personalisasi lengkap (risk level, trading style, sector preference, dll)
 
 ---
 
@@ -28,24 +25,18 @@ Stock AI Engine adalah platform analisis saham B2C lengkap dengan AI-powered ins
 ```
 stock-ai-engine/
 ├── README.md                      # Dokumentasi utama proyek
-├── B2C_UPDATE.md                  # 🆕 B2C Platform update guide
-├── PROJECT_STATUS.md              # Status proyek (file ini)
 ├── QUICK_START.md                 # Panduan cepat memulai
 ├── MACOS_QUICK_COMMANDS.md        # Referensi command macOS
 ├── ENHANCEMENT_ROADMAP.md         # Roadmap pengembangan
+├── PROJECT_STATUS.md              # Status proyek (file ini)
 ├── VISUAL_OVERVIEW.md             # Diagram dan visualisasi
+├── GITHUB_SETUP.md                # Panduan setup GitHub
+├── GITHUB_CONFIGURED.md           # Konfirmasi GitHub sudah setup
 │
 ├── config.py                      # ⚙️ Konfigurasi utama (120+ stocks, 10y data)
-├── main.py                        # 🚀 V1 API entry point (legacy)
-├── app_b2c.py                     # 🆕 V2 B2C Platform entry point
-├── requirements.txt               # 📦 Dependencies Python (updated)
+├── main.py                        # 🚀 Entry point API
+├── requirements.txt               # 📦 Dependencies Python
 ├── idx_stocks_complete.py         # 📊 Database saham Indonesia
-├── test_b2c_api.py                # 🆕 API testing script
-│
-├── api/                           # 🆕 API Module
-│   ├── __init__.py
-│   ├── auth.py                    # 🆕 JWT authentication system
-│   └── b2c_endpoints.py           # 🆕 B2C-focused endpoints
 │
 ├── app/                           # 🌐 Aplikasi FastAPI
 │   ├── __init__.py
@@ -57,15 +48,6 @@ stock-ai-engine/
 │   └── decision.py                # Signal generation
 │
 ├── indicators/                    # 📈 Technical indicators
-│   └── technical.py               # RSI, MACD, EMA, BB, Volume
-│
-├── data/                          # 💾 Data fetching
-│   ├── fetcher.py                 # Main data fetcher
-│   ├── fundamentals.py            # Fundamental data
-│   ├── enhanced_fundamentals.py   # 🆕 Enhanced fundamental analysis
-│   └── fetchers/
-│       └── yahoo_fundamentals.py
-```
 │   └── technical.py               # RSI, MACD, EMA, BB, Volume
 │
 ├── data/                          # 💾 Data fetching
