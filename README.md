@@ -1,15 +1,22 @@
 # 📈 Stock AI Engine
 
-Institutional-grade stock trading signal engine with SHORT signal support and 1-year lookback data.
+> **Sistem Analisis Saham Otomatis dengan AI** - Production Ready ✅
+
+Institutional-grade stock trading signal engine dengan dukungan **120+ saham Indonesia**, data historis **10 tahun**, dan AI-powered analysis.
+
+**📌 Quick Links**: [Status Proyek](PROJECT_STATUS.md) | [Quick Start](QUICK_START.md) | [macOS Commands](MACOS_QUICK_COMMANDS.md) | [Roadmap](ENHANCEMENT_ROADMAP.md)
+
+---
 
 ## 🎯 Features
 
-✅ **4 Signal Types**: BUY, SELL, HOLD, SHORT  
-✅ **Technical Indicators**: EMA, RSI, MACD, Bollinger Bands, ATR, Volume  
-✅ **1-Year Timeframe**: 250 trading days for accurate pattern recognition  
-✅ **Backtesting**: Complete with metrics (Sharpe ratio, recovery factor, win rate)  
-✅ **REST API**: FastAPI with Swagger documentation  
-✅ **Real-time Signals**: Live market data via yfinance  
+✅ **120+ Saham IDX**: IDX-30, LQ45, Banking, Mining, Consumer, Tech, Property, Retail, Transportation, Media  
+✅ **4 Signal Types**: BUY, SELL, HOLD, SHORT dengan confidence score 0-100%  
+✅ **Data 10 Tahun**: 2,520 trading days untuk analisis mendalam  
+✅ **9+ Technical Indicators**: EMA, RSI, MACD, Bollinger Bands, ATR, Volume, dll  
+✅ **20 User Parameters**: Trading style, risk level, sector preference, notifications, dll  
+✅ **REST API**: FastAPI dengan Swagger documentation otomatis  
+✅ **Backtesting**: Historical performance validation dengan metrics lengkap  
 ✅ **Production Ready**: Error handling, logging, institutional standards  
 
 ## 🚀 Quick Start
