@@ -293,11 +293,12 @@ def setup_auth_routes(app):
                 "created_at": datetime.now().isoformat()
             }
             
-            return Token(
-                access_token=access_token,
-                refresh_token=refresh_token,
-                expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
-            )
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+            }
             
         except HTTPException:
             raise
@@ -354,11 +355,12 @@ def setup_auth_routes(app):
             "created_at": datetime.now().isoformat()
         }
         
-        return Token(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
-        )
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        }
     
     
     @app.get("/api/v2/auth/me")
@@ -444,11 +446,12 @@ def setup_auth_routes(app):
         new_access_token = create_access_token(token_data)
         
         # Keep the same refresh token
-        return Token(
-            access_token=new_access_token,
-            refresh_token=refresh_token,
-            expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60
-        )
+        return {
+            "access_token": new_access_token,
+            "refresh_token": refresh_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        }
     
     return app
 
